@@ -22,7 +22,7 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.45;margin:0}
+body{background:radial-gradient(1200px 600px at 50% -10%, #22263a 0%, var(--bg) 60%) fixed, var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.45;margin:0}
 .wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:16px 32px;display:flex;flex-direction:column;gap:16px;min-height:100%}
 button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:12px 20px;font-weight:700;background:var(--panel2);color:var(--fg)}
 button:focus-visible,input:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
@@ -81,29 +81,9 @@ h2{font-family:var(--f-display);font-weight:700;font-size:clamp(1.4rem,2.6vw,2re
 .locked{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:1.25rem;font-weight:700;color:var(--good);min-height:52px}
 
 /* reveal */
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;perspective:900px}
-.card{border-radius:16px;min-height:170px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
-.card .face{position:absolute;inset:0;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;backface-visibility:hidden;padding:12px;text-align:center}
-.card .back{background:repeating-linear-gradient(45deg,var(--panel2) 0 12px,#262b3e 12px 24px);border:2px solid var(--line);font-family:var(--f-display);font-size:2.6rem;color:var(--muted)}
-.card .front{background:var(--panel2);border:3px solid var(--c);transform:rotateY(180deg)}
-.card.flipped{transform:rotateY(180deg)}
-.card .who{font-weight:700;color:var(--c)}
-.card .amt{font-family:var(--f-num);font-size:clamp(2rem,4vw,3rem);font-weight:700}
-.card .tag{font-size:.85rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.card.win .front{background:var(--c);color:var(--brass-ink)}
-.card.win .who,.card.win .tag{color:var(--brass-ink)}
-.verdict{font-family:var(--f-display);font-size:clamp(1.5rem,3vw,2.3rem);font-weight:800;min-height:1.3em}
 
 /* value reveal */
-.value{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
-.stat{background:var(--panel2);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
-.stat .k{color:var(--muted);font-size:.9rem}
-.stat .v{font-family:var(--f-num);font-size:clamp(1.8rem,3.6vw,2.8rem);font-weight:700}
-.stat.big{background:var(--brass);color:var(--brass-ink)}
-.stat.big .k{color:var(--brass-ink)}
 .good{color:var(--good)} .bad{color:var(--bad)}
-.why{background:var(--panel2);border-radius:14px;padding:16px 18px;font-size:1.1rem;max-width:80ch;border-left:4px solid var(--brass)}
-.why .src{display:block;color:var(--muted);font-size:.9rem;margin-top:6px}
 .pop{animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
 @keyframes pop{from{transform:scale(.6);opacity:.2}to{transform:scale(1);opacity:1}}
 
@@ -159,6 +139,89 @@ h2{font-family:var(--f-display);font-weight:700;font-size:clamp(1.4rem,2.6vw,2re
 .plist div{display:flex;justify-content:space-between;background:var(--panel2);border-radius:10px;padding:10px 14px;border-left:4px solid var(--c)}
 .small{font-size:.85rem;color:var(--muted)}
 .linkbtn{background:none;color:var(--muted);text-decoration:underline;padding:4px;font-weight:500}
+/* ---------- pack-opening reveal ---------- */
+.arena{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;padding-block:18px 8px}
+.pack{position:relative;height:260px;border-radius:20px;isolation:isolate}
+.pack .rays{position:absolute;inset:-40%;z-index:-1;opacity:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg, var(--rc, #e2b04a) 0deg 7deg, transparent 7deg 22deg);
+  -webkit-mask:radial-gradient(circle, #000 18%, transparent 62%);mask:radial-gradient(circle, #000 18%, transparent 62%);
+  transition:opacity .4s}
+.pack .shell,.pack .inner{position:absolute;inset:0;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:14px}
+.pack .shell{background:
+    radial-gradient(circle at 50% 42%, rgba(226,176,74,.22), transparent 55%),
+    repeating-linear-gradient(135deg, #1e2233 0 14px, #23283b 14px 28px);
+  border:2px solid #3a4060;box-shadow:0 18px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04);
+  transition:transform .35s cubic-bezier(.3,1.6,.5,1), opacity .25s, filter .3s}
+.pack .shell .q{font-family:var(--f-display);font-weight:800;font-size:5.2rem;line-height:1;color:var(--brass);text-shadow:0 0 24px rgba(226,176,74,.6)}
+.pack .shell .gname{font-weight:700;color:var(--c);letter-spacing:.04em}
+.pack .inner{opacity:0;transform:scale(.6);background:linear-gradient(180deg,#262b40,#1c2030);border:3px solid var(--rc);
+  box-shadow:0 0 0 1px rgba(255,255,255,.05), 0 0 38px -6px var(--rc);transition:transform .5s cubic-bezier(.2,1.5,.4,1), opacity .25s}
+.pack .inner .gname{font-weight:700;color:var(--c);font-size:1.1rem}
+.pack .inner .amt{font-family:var(--f-num);font-weight:700;font-size:clamp(2.4rem,4.4vw,3.6rem);color:#fff}
+.pack .inner .rank{font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rc)}
+.pack .flash{position:absolute;inset:-6px;border-radius:24px;background:#fff;opacity:0;pointer-events:none;z-index:3}
+
+/* states */
+.pack.shake .shell{animation:shake .12s linear infinite}
+.pack.shake .shell .q{animation:qpulse .5s ease-in-out infinite alternate}
+.pack.charge .shell{animation:shake .06s linear infinite;filter:brightness(1.35) drop-shadow(0 0 22px var(--rc))}
+.pack.open .shell{transform:scale(1.25);opacity:0}
+.pack.open .inner{opacity:1;transform:scale(1)}
+.pack.open .flash{animation:flash .55s ease-out}
+.pack.open .rays{opacity:.35;animation:spin 9s linear infinite}
+.pack.dim{filter:saturate(.5) brightness(.7);transform:scale(.95);transition:filter .6s, transform .6s}
+.pack.winner{z-index:2}
+.pack.winner .inner{background:linear-gradient(180deg,#3a2f12,#1f1a0c);border-color:#f2c45e;box-shadow:0 0 0 2px rgba(242,196,94,.4),0 0 70px 4px rgba(242,196,94,.55)}
+.pack.winner .inner .amt{color:#ffe6a6;text-shadow:0 0 22px rgba(242,196,94,.8)}
+.pack.winner .rays{opacity:.75;animation:spin 6s linear infinite}
+.pack.winner{animation:winbump .7s cubic-bezier(.2,1.6,.4,1) both}
+.pack .crown{position:absolute;top:-30px;left:50%;transform:translate(-50%,10px) scale(.4);opacity:0;width:64px;height:44px;z-index:4;transition:all .5s cubic-bezier(.2,1.6,.4,1)}
+.pack.winner .crown{opacity:1;transform:translate(-50%,0) scale(1)}
+.pack .stamp{position:absolute;top:14px;right:-10px;transform:rotate(12deg) scale(2.2);opacity:0;background:var(--bad);color:#fff;font-weight:800;letter-spacing:.12em;padding:4px 12px;border-radius:6px;z-index:4;transition:all .35s cubic-bezier(.2,1.6,.4,1)}
+.pack.tie .stamp{opacity:1;transform:rotate(12deg) scale(1)}
+.pack.tie .inner{border-color:var(--bad);box-shadow:0 0 40px -6px var(--bad)}
+
+@keyframes shake{
+  0%{transform:translate(0,0) rotate(0)} 20%{transform:translate(-3px,1px) rotate(-1.2deg)}
+  40%{transform:translate(3px,-2px) rotate(1deg)} 60%{transform:translate(-2px,2px) rotate(-.8deg)}
+  80%{transform:translate(2px,-1px) rotate(1.2deg)} 100%{transform:translate(0,0) rotate(0)}}
+@keyframes qpulse{from{transform:scale(1);text-shadow:0 0 18px rgba(226,176,74,.5)}to{transform:scale(1.12);text-shadow:0 0 40px rgba(226,176,74,1)}}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes winbump{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1.04)}}
+
+.banner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:92px}
+.banner .big{font-family:var(--f-display);font-weight:800;font-size:clamp(1.8rem,3.8vw,3rem);letter-spacing:-.01em;opacity:0;transform:translateY(14px);transition:all .5s cubic-bezier(.2,1.4,.4,1)}
+.banner .sub{color:var(--muted);font-size:1.1rem;opacity:0;transition:opacity .5s .25s}
+.banner.show .big{opacity:1;transform:none}
+.banner.show .sub{opacity:1}
+.actions.center{justify-content:center}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:20}
+
+/* ---------- value reveal (centred) ---------- */
+.value{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.stat{background:var(--panel2);border-radius:16px;padding:18px 22px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:200px;text-align:center}
+.stat .k{color:var(--muted);font-size:.9rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+.stat .v{font-family:var(--f-num);font-size:clamp(2rem,3.8vw,3rem);font-weight:700}
+.stat.big{background:linear-gradient(180deg,#f0c463,#d9a23a);color:var(--brass-ink);box-shadow:0 10px 40px -10px rgba(226,176,74,.7)}
+.stat.big .k{color:var(--brass-ink)}
+.why{margin:6px auto 0;max-width:68ch;text-align:center;font-size:clamp(1.1rem,1.6vw,1.3rem);line-height:1.55;padding:20px 26px;border-radius:16px;background:var(--panel2);border-top:3px solid var(--brass)}
+.why .src{display:block;color:var(--muted);font-size:.92rem;margin-top:10px}
+.stage.centered .lot{justify-content:center;text-align:center}
+.stage.centered .lot .txt{align-items:center;flex:0 1 auto}
+
+/* group status in join panels */
+.gslots{display:flex;flex-wrap:wrap;gap:8px}
+.gslot{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:6px 8px 6px 12px;border-left:4px solid var(--c);font-size:.9rem}
+.gslot b{color:var(--c)}
+.gslot button{padding:4px 10px;font-size:.8rem;font-weight:500}
+
+@media (max-width:760px){ .arena{grid-template-columns:1fr} .pack{height:170px} .pack .shell .q{font-size:3.6rem} }
+@media (prefers-reduced-motion:reduce){
+  .pack.shake .shell,.pack.charge .shell,.pack.shake .shell .q,.pack.open .rays,.pack.winner .rays,.pack.winner{animation:none}
+}
+
+.stage{overflow:hidden;position:relative}
 
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -212,10 +275,12 @@ const ASSETS = [
 
 const SHORT = ["Free users","Researchers","Scraped data","Global trust","Huawei chips","WeChat"];
 const PEER_PREFIX = "teamg-ai-auction-";
+const RANK_COLORS = ["#6fa8ff", "#b47cff", "#f2c45e"]; // low · mid · top, like pack rarities
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const eur = n => "€" + n + "M";
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 const store = {
   get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -223,23 +288,80 @@ const store = {
 const params = new URLSearchParams(location.search);
 const JOIN = params.get("join");
 
-if (JOIN) startPlayer(JOIN); else startHost();
+
+/* ---------- small sound kit (host only, starts after a click) ---------- */
+const Sound = (() => {
+  let ctx = null, on = true;
+  const ac = () => { if(!ctx){ try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ on=false; } } return ctx; };
+  function tone(freq, dur, type="sine", vol=.18, when=0, slideTo=null){
+    if(!on || !ac()) return;
+    const t = ctx.currentTime + when, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t+dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t+.02); g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+dur+.05);
+  }
+  function noise(dur, vol=.12, when=0){
+    if(!on || !ac()) return;
+    const t = ctx.currentTime + when, len = Math.floor(ctx.sampleRate*dur), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    const s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    f.type = "bandpass"; f.frequency.value = 1800; s.buffer = b; g.gain.value = vol;
+    s.connect(f).connect(g).connect(ctx.destination); s.start(t);
+  }
+  return {
+    get on(){ return on; }, set on(v){ on = v; },
+    unlock(){ ac(); if(ctx && ctx.state==="suspended") ctx.resume(); },
+    rumble(){ tone(70, 2.0, "sawtooth", .07, 0, 160); tone(110, 2.0, "triangle", .06, 0, 330); },
+    open(level){ noise(.25, .14); tone([440,560,700][level]||440, .35, "triangle", .18, .02, ([440,560,700][level]||440)*1.5); },
+    win(){ [523,659,784,1047].forEach((f,i)=>tone(f, .5, "triangle", .16, i*.11)); tone(1568,.9,"sine",.08,.45); },
+    tie(){ tone(300,.35,"square",.08,0,180); tone(240,.45,"square",.08,.2,140); }
+  };
+})();
+
+/* ---------- confetti ---------- */
+function confetti(fromEl){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let c = $("#confetti");
+  if(!c){ c = document.createElement("canvas"); c.id = "confetti"; document.body.appendChild(c); }
+  const dpr = window.devicePixelRatio || 1;
+  c.width = innerWidth*dpr; c.height = innerHeight*dpr;
+  const x = c.getContext("2d"); x.scale(dpr,dpr);
+  const r = fromEl.getBoundingClientRect(), ox = r.left + r.width/2, oy = r.top + r.height/3;
+  const cols = ["#f2c45e","#ffe6a6","#ff7a6b","#3fc7b4","#a98bff","#ffffff"];
+  const P = Array.from({length:170}, () => {
+    const a = -Math.PI/2 + (Math.random()-.5)*Math.PI*1.3, s = 6 + Math.random()*10;
+    return {x:ox, y:oy, vx:Math.cos(a)*s, vy:Math.sin(a)*s, w:6+Math.random()*6, h:8+Math.random()*10, r:Math.random()*6, vr:(Math.random()-.5)*.35, c:cols[Math.floor(Math.random()*cols.length)]};
+  });
+  const t0 = performance.now();
+  (function frame(now){
+    const el = now - t0; x.clearRect(0,0,innerWidth,innerHeight);
+    P.forEach(p => { p.vy += .32; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.globalAlpha = Math.max(0, 1 - el/2600); x.fillStyle = p.c; x.fillRect(-p.w/2,-p.h/2,p.w,p.h); x.restore(); });
+    if(el < 2600) requestAnimationFrame(frame); else x.clearRect(0,0,innerWidth,innerHeight);
+  })(t0);
+}
+
+const CROWN = `<svg class="crown" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 38 L8 10 L22 24 L32 4 L42 24 L56 10 L60 38 Z" fill="#f2c45e" stroke="#fff3cf" stroke-width="2" stroke-linejoin="round"/><circle cx="8" cy="10" r="4" fill="#fff3cf"/><circle cx="32" cy="4" r="4" fill="#fff3cf"/><circle cx="56" cy="10" r="4" fill="#fff3cf"/></svg>`;
 
 /* =========================================================
    HOST (projector laptop)
    ========================================================= */
 function startHost(){
   document.getElementById("hostView").hidden = false;
-  const KEY = "ai-auction-online-v1";
-  const fresh = () => ({phase:"intro", i:0, cash:[START,START,START], owned:[[],[],[]], bids:[null,null,null], via:[null,null,null], result:null});
+  const KEY = "ai-auction-online-v2";
+  const fresh = () => ({phase:"intro", i:0, cash:[START,START,START], owned:[[],[],[]], bids:[null,null,null], via:[null,null,null], result:null, owner:[null,null,null]});
   let S = store.get(KEY); if(!S || !S.cash) S = fresh();
+  if(!S.owner) S.owner = [null,null,null];
   if(S.phase==="reveal") S.phase="bidding";
   const save = () => store.set(KEY, S);
+  const started = () => S.phase !== "intro";
 
   /* ---------- networking ---------- */
   let peer = null, conns = [], netState = "connecting", joinUrl = "";
-  let code = store.get(KEY+"-code");
-  if(!code){ code = Math.random().toString(36).slice(2,8); store.set(KEY+"-code", code); }
+  let code = store.get("ai-auction-online-v1-code") || store.get(KEY+"-code");
+  if(!code){ code = Math.random().toString(36).slice(2,8); }
+  store.set(KEY+"-code", code);
   let tries = 0;
   function openPeer(){
     if(typeof Peer === "undefined"){ netState = "failed"; paintNet(); return; }
@@ -250,7 +372,7 @@ function startHost(){
       paintNet(); paintQR();
     });
     peer.on("connection", conn => {
-      conn.group = null;
+      conn.token = null;
       conn.on("open", () => { conns.push(conn); sendState(conn); paintNet(); });
       conn.on("data", msg => onMsg(conn, msg));
       conn.on("close", () => { conns = conns.filter(c => c !== conn); paintNet(); });
@@ -263,14 +385,27 @@ function startHost(){
       if(["network","server-error","socket-error","socket-closed","browser-incompatible"].includes(err.type)){ netState = "failed"; paintNet(); }
     });
   }
+  const groupOf = conn => { const g = S.owner.indexOf(conn.token); return g >= 0 ? g : null; };
   function onMsg(conn, msg){
     if(!msg || typeof msg !== "object") return;
-    if(msg.t === "hello"){
-      const g = Number(msg.group);
-      conn.group = (g===0||g===1||g===2) ? g : null;
-      sendState(conn); paintNet(); return;
+    const tok = typeof msg.token === "string" ? msg.token.slice(0,40) : null;
+    if(msg.t === "hello"){ conn.token = tok; sendState(conn); paintNet(); return; }
+    if(msg.t === "claim"){
+      conn.token = tok;
+      const g = Number(msg.group), mine = groupOf(conn);
+      if(!(g===0||g===1||g===2)) return;
+      if(mine === g){ sendState(conn); return; }
+      if(mine !== null && started()){ safeSend(conn,{t:"denied", msg:"The auction has started, so groups are locked."}); return; }
+      if(S.owner[g] && S.owner[g] !== tok){ safeSend(conn,{t:"denied", msg:`${GROUPS[g].name} already has a phone. Pick another group.`}); return; }
+      if(mine !== null) S.owner[mine] = null;   // switching before the start
+      S.owner[g] = tok; save(); broadcast(); paintNet(); return;
     }
-    const g = conn.group;
+    if(msg.t === "release"){
+      const mine = groupOf(conn);
+      if(mine !== null && !started()){ S.owner[mine] = null; save(); broadcast(); paintNet(); }
+      return;
+    }
+    const g = groupOf(conn);
     if(g === null) return;
     if(msg.t === "bid"){
       const n = Number(msg.amount);
@@ -281,40 +416,48 @@ function startHost(){
       if(err){ safeSend(conn, {t:"ack", ok:false, msg:err}); return; }
       S.bids[g] = n; S.via[g] = "phone";
       safeSend(conn, {t:"ack", ok:true});
-      if(S.phase === "bidding") refreshBidding();
-      return;
-    }
-    if(msg.t === "unbid"){
-      if(S.phase === "bidding" && msg.round === S.i){ S.bids[g] = null; S.via[g] = null; refreshBidding(); }
+      refreshBidding();
     }
   }
   function safeSend(conn, data){ try{ if(conn.open) conn.send(data); }catch(e){} }
-  function stateFor(g){
-    const a = ASSETS[S.i];
-    const out = {t:"state", phase:S.phase, i:S.i, total:ASSETS.length,
-      asset:{name:a.name, desc:a.desc}, cash:S.cash,
-      locked:S.bids.map(b => b!==null),
+  function stateFor(conn){
+    const g = groupOf(conn), a = ASSETS[S.i];
+    const out = {t:"state", phase:S.phase, started:started(), me:g, taken:S.owner.map(o=>!!o),
+      i:S.i, total:ASSETS.length, asset:{name:a.name, desc:a.desc}, cash:S.cash,
       mine: g===null ? null : S.bids[g],
       timer: timerEnd ? Math.max(0, timerEnd - Date.now()) : 0};
-    if(S.phase === "reveal" || S.phase === "value"){ out.bids = S.bids; out.result = S.result; }
+    if(S.phase === "reveal" || S.phase === "value"){ out.bids = S.bids; out.result = S.result; out.revealed = S.phase==="value" || revealDone; }
     if(S.phase === "value"){ out.value = a.value; out.why = a.why; }
     if(S.phase === "final"){ out.rank = ranking().map(x => ({g:x.g.id, cash:x.cash, av:x.av, tot:x.tot})); }
     return out;
   }
-  function sendState(conn){ safeSend(conn, stateFor(conn.group)); }
+  function sendState(conn){ safeSend(conn, stateFor(conn)); }
   function broadcast(){ conns.forEach(sendState); }
+  const online = g => S.owner[g] && conns.some(c => c.open && c.token === S.owner[g]);
 
-  function counts(){ const c=[0,0,0]; conns.forEach(k => { if(k.group!==null) c[k.group]++; }); return c; }
+  function slotsHtml(){
+    return `<div class="gslots">${GROUPS.map(g => {
+      const st = !S.owner[g.id] ? "open" : online(g.id) ? "📱 joined" : "📱 joined (offline)";
+      return `<span class="gslot" style="--c:${g.color}"><b>${g.name}</b> ${st}${S.owner[g.id] ? ` <button class="ghost" data-free="${g.id}">Free up</button>` : ""}</span>`;
+    }).join("")}</div>`;
+  }
+  function bindFree(root){
+    root.querySelectorAll("[data-free]").forEach(b => b.onclick = () => {
+      const g = Number(b.dataset.free);
+      b.outerHTML = `<button data-sure="${g}">Sure?</button>`;
+      root.querySelector(`[data-sure="${g}"]`).onclick = () => { S.owner[g] = null; save(); broadcast(); paintNet(); };
+    });
+  }
   function paintNet(){
     const el = $("#net"); if(!el) return;
-    const c = counts();
     const dot = netState==="online" ? "on" : netState==="failed" ? "off" : "";
     const label = netState==="online" ? "Phones can join" : netState==="failed" ? "Phones can't connect: type bids here" : "Connecting…";
     el.innerHTML = `<span class="pill"><span class="dot ${dot}"></span>${label}</span>
-      ${GROUPS.map(g=>`<span class="pill" style="color:${g.color}">${g.name.replace("Group ","G")} <b>${c[g.id]}</b> 📱</span>`).join("")}
-      <button class="ghost" id="showQR" ${netState==="online"?"":"disabled"}>Show join code</button>`;
+      ${GROUPS.map(g=>`<span class="pill" style="color:${g.color}">${g.name.replace("Group ","G")} <b>${S.owner[g.id] ? (online(g.id)?"📱":"⚠") : "–"}</b></span>`).join("")}
+      <button class="ghost" id="showQR" ${netState==="online"?"":"disabled"}>Join code</button>`;
     $("#showQR").onclick = showOverlay;
-    const ic = $("#introCounts"); if(ic) ic.innerHTML = GROUPS.map(g=>`<span class="pill" style="color:${g.color}">${g.name}: <b>${c[g.id]}</b> phone${c[g.id]===1?"":"s"}</span>`).join(" ");
+    const ic = $("#introSlots"); if(ic){ ic.innerHTML = slotsHtml(); bindFree(ic); }
+    const oc = $("#ovSlots"); if(oc){ oc.innerHTML = slotsHtml(); bindFree(oc); }
     const iw = $("#introNet"); if(iw) iw.hidden = netState !== "failed";
   }
   function qrInto(el){
@@ -328,9 +471,10 @@ function startHost(){
     const o = document.createElement("div"); o.className = "overlay"; o.id = "ov";
     o.innerHTML = `<div class="joinbox"><div class="qr" id="qrOv"></div>
       <div style="display:flex;flex-direction:column;gap:10px;min-width:0"><h2>Scan to join</h2>
-      <p class="lede">Open your camera, scan the code, then tap your group.</p>
-      <div class="joinurl">${esc(joinUrl)}</div><div class="actions"><button class="primary" id="closeOv">Close</button></div></div></div>`;
-    document.body.appendChild(o); qrInto($("#qrOv"));
+      <p class="lede" style="margin:0">One phone per group. Groups are locked once the auction starts.</p>
+      <div class="joinurl">${esc(joinUrl)}</div><div id="ovSlots"></div>
+      <div class="actions"><button class="primary" id="closeOv">Close</button></div></div></div>`;
+    document.body.appendChild(o); qrInto($("#qrOv")); paintNet();
     $("#closeOv").onclick = () => o.remove();
     o.onclick = e => { if(e.target === o) o.remove(); };
   }
@@ -349,6 +493,7 @@ function startHost(){
   /* ---------- game ---------- */
   const assetVal = g => S.owned[g].reduce((a,k)=>a+ASSETS[k].value,0);
   const ranking = () => GROUPS.map(g=>({g, cash:S.cash[g.id], av:assetVal(g.id), tot:S.cash[g.id]+assetVal(g.id)})).sort((a,b)=> b.tot-a.tot || b.cash-a.cash);
+  let revealDone = false, runId = 0;
 
   function renderBoard(){
     $("#board").innerHTML = GROUPS.map(g=>`
@@ -365,8 +510,8 @@ function startHost(){
   }
 
   function render(){
-    stopTimer(); timerEnd = 0; renderBoard(); save();
-    const st = $("#stage");
+    stopTimer(); timerEnd = 0; runId++; renderBoard(); save();
+    const st = $("#stage"); st.classList.toggle("centered", S.phase==="value");
     ({intro, bidding, reveal, value, final})[S.phase](st);
     paintNet(); broadcast();
   }
@@ -374,29 +519,29 @@ function startHost(){
   function intro(st){
     st.innerHTML = `
       <div class="eyebrow">You are three rival AI start-ups</div>
-      <h1>Six assets. One secret bid each. Spend wisely.</h1>
+      <h1>Six assets in total. Spend your money wisely.</h1>
       <div class="joinbox">
         <div class="qr" id="qrIntro">${joinUrl ? "" : "Connecting…"}</div>
         <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
           <h2>Scan to join your group</h2>
-          <p class="lede" style="margin:0">One phone per group is enough. More is fine: the latest bid sent from any phone in a group counts.</p>
+          <p class="lede" style="margin:0">One phone per group. Pick your group on the phone. Groups are locked once the auction starts.</p>
           <div class="joinurl" id="urlIntro"></div>
-          <div id="introCounts" class="joinbar"></div>
-          ${location.protocol==="file:" ? `<div class="warn">This file is opened from your computer, so phones can't reach it. Upload it to GitHub Pages or Netlify first and open that link instead.</div>` : ""}
+          <div id="introSlots"></div>
+          ${location.protocol==="file:" ? `<div class="warn">This file is opened from your computer, so phones can't reach it. Open your GitHub Pages link instead.</div>` : ""}
           <div class="warn" id="introNet" hidden>Phones can't connect on this network. You can still play: type each group's bid into its box on this screen.</div>
         </div>
       </div>
       <ol class="rules">
-        <li>One asset at a time. Groups get 30 seconds to agree on one secret bid.</li>
+        <li>One asset at a time. Each group has 30 seconds to agree on one bid and send it from its phone.</li>
         <li>All bids are revealed at once. The highest bid wins the asset and pays. Others pay nothing.</li>
         <li>A tie for the highest bid means nobody gets the asset.</li>
         <li>You can bid €0, but never more than you have left.</li>
         <li>The winning group explains why they bid that amount. Then the real value is revealed.</li>
         <li>Final score = money left + real value of your assets. Highest score wins.</li>
       </ol>
-      <div class="actions"><button class="primary" id="go">Start the auction</button></div>`;
+      <div class="actions"><button class="primary" id="go">Start the auction</button><span class="round">Starting locks every phone to its group.</span></div>`;
     paintQR();
-    $("#go").onclick = ()=>{ S.phase="bidding"; S.bids=[null,null,null]; S.via=[null,null,null]; render(); };
+    $("#go").onclick = ()=>{ Sound.unlock(); S.phase="bidding"; S.bids=[null,null,null]; S.via=[null,null,null]; render(); };
   }
 
   function lotHead(a){
@@ -411,7 +556,7 @@ function startHost(){
       ${b===null ? `
         <div class="field"><span>€</span><input id="in${g.id}" type="password" inputmode="numeric" autocomplete="off" placeholder="waiting for phone…" aria-describedby="h${g.id}"><span>M</span></div>
         <button id="lock${g.id}">Lock bid</button>
-        <div class="hint" id="h${g.id}">Bid from a phone, or type it here (hidden).</div>`
+        <div class="hint" id="h${g.id}">Bid from the phone, or type it here (hidden).</div>`
       : `<div class="locked"><span>Bid locked ✓ <span class="src-phone">${S.via[g.id]==="phone"?"from phone":"typed here"}</span></span><button class="ghost" id="edit${g.id}">Clear</button></div>
         <div class="hint">Hidden until the reveal.</div>`}
     </div>`;
@@ -426,7 +571,7 @@ function startHost(){
       <div class="bids">${GROUPS.map(bidBox).join("")}</div>
       <div class="actions"><button class="primary" id="revealBtn" ${n===3?"":"disabled"}>Reveal all bids</button>
       <span class="round">${n} of 3 bids locked</span></div>`;
-    $("#t30").onclick = ()=>startTimer(30);
+    $("#t30").onclick = ()=>{ Sound.unlock(); startTimer(30); };
     GROUPS.forEach(g=>{
       const inp = $("#in"+g.id), ed = $("#edit"+g.id);
       if(inp){
@@ -442,10 +587,10 @@ function startHost(){
       }
       if(ed) ed.onclick = ()=>{ S.bids[g.id]=null; S.via[g.id]=null; refreshBidding(); };
     });
-    $("#revealBtn").onclick = ()=>{ S.result = settle(); S.phase="reveal"; render(); };
+    $("#revealBtn").onclick = ()=>{ Sound.unlock(); S.result = settle(); S.phase="reveal"; revealDone=false; render(); };
   }
   function refreshBidding(){
-    // keep typed-but-unlocked values and the running timer
+    if(S.phase !== "bidding") return;
     const typed = GROUPS.map(g => { const el = $("#in"+g.id); return el ? el.value : ""; });
     const focused = document.activeElement && document.activeElement.id;
     save(); bidding($("#stage")); paintTimer();
@@ -457,43 +602,70 @@ function startHost(){
   function settle(){
     const max = Math.max(...S.bids);
     const top = S.bids.map((b,i)=>b===max?i:-1).filter(i=>i>=0);
-    if(max===0) return {winner:null, reason:"nobid", price:0};
-    if(top.length>1) return {winner:null, reason:"tie", price:max};
-    return {winner:top[0], price:max};
+    if(max===0) return {winner:null, reason:"nobid", price:0, top:[]};
+    if(top.length>1) return {winner:null, reason:"tie", price:max, top};
+    return {winner:top[0], price:max, top};
   }
 
+  /* --- the pack opening --- */
   function reveal(st){
-    const a = ASSETS[S.i], r = S.result;
-    const order = GROUPS.map(g=>({g, b:S.bids[g.id]})).sort((x,y)=>x.b-y.b);
+    const a = ASSETS[S.i], r = S.result, me = runId;
+    // open order: lowest bid first, ties broken by group number; positions stay Group 1, 2, 3
+    const order = [0,1,2].sort((x,y)=> S.bids[x]-S.bids[y] || x-y);
+    const level = g => r.top.includes(g) && S.bids[g] > 0 ? 2 : order.indexOf(g) === 0 ? 0 : 1;
     st.innerHTML = `
       ${lotHead(a)}
-      <div class="cards">${order.map((o,k)=>`
-        <div class="card" id="c${k}" style="--c:${o.g.color}">
-          <div class="face back">?</div>
-          <div class="face front"><span class="who">${o.g.name}</span><span class="amt">${eur(o.b)}</span><span class="tag" id="tag${k}"></span></div>
+      <div class="arena">${GROUPS.map(g=>`
+        <div class="pack" id="pk${g.id}" style="--c:${g.color};--rc:${RANK_COLORS[level(g.id)]}">
+          <div class="rays"></div>${CROWN}<span class="stamp">TIE</span>
+          <div class="shell"><span class="q">?</span><span class="gname">${g.name}</span></div>
+          <div class="inner"><span class="gname">${g.name}</span><span class="amt">${eur(S.bids[g.id])}</span><span class="rank" id="rk${g.id}">&nbsp;</span></div>
+          <div class="flash"></div>
         </div>`).join("")}</div>
-      <div class="verdict" id="verdict"></div>
-      <div class="actions" id="after" hidden></div>`;
-    const step = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 750;
-    order.forEach((o,k)=>setTimeout(()=>{ const c=$("#c"+k); if(c) c.classList.add("flipped"); }, 300 + k*step));
-    setTimeout(()=>{
-      const v = $("#verdict"), after = $("#after"); if(!v) return;
-      if(r.winner!==null){
-        const k = order.findIndex(o=>o.g.id===r.winner);
-        $("#c"+k).classList.add("win"); $("#tag"+k).textContent="Winner";
-        v.innerHTML = `<span style="color:${GROUPS[r.winner].color}">${GROUPS[r.winner].name}</span> wins for ${eur(r.price)}. Why that much?`;
+      <div class="banner" id="banner"><div class="big" id="bigline"></div><div class="sub" id="subline"></div></div>
+      <div class="actions center" id="after" hidden></div>`;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const alive = () => me === runId && S.phase === "reveal";
+    (async () => {
+      const packs = GROUPS.map(g => $("#pk"+g.id));
+      if(!reduce){ packs.forEach(p=>p.classList.add("shake")); Sound.rumble(); await sleep(2000); if(!alive()) return; }
+      packs.forEach(p=>p.classList.remove("shake"));
+      for(let k=0; k<order.length; k++){
+        const g = order[k], p = packs[g], last = k === order.length-1;
+        if(!reduce){ p.classList.add("charge"); await sleep(last ? 900 : 420); if(!alive()) return; p.classList.remove("charge"); }
+        p.classList.add("open"); Sound.open(level(g));
+        $("#rk"+g).textContent = (r.reason==="tie" && r.top.includes(g)) ? "Tied highest" : last ? "Highest bid" : k===0 ? "Lowest bid" : "Middle bid";
+        if(!last) await sleep(reduce ? 0 : 750);
+        if(!alive()) return;
+      }
+      await sleep(reduce ? 0 : 450); if(!alive()) return;
+      const big = $("#bigline"), sub = $("#subline"), after = $("#after");
+      if(r.winner !== null){
+        const g = GROUPS[r.winner], wp = packs[r.winner];
+        packs.forEach((p,i)=>{ if(i!==r.winner) p.classList.add("dim"); });
+        wp.classList.add("winner"); $("#rk"+r.winner).textContent = "Winner";
+        Sound.win(); confetti(wp);
+        big.innerHTML = `<span style="color:${g.color}">${g.name}</span> wins for ${eur(r.price)}`;
+        sub.textContent = "Why was it worth that much? You have 15 seconds.";
         after.innerHTML = `<button id="t15">Start 15-second explanation</button><span class="timer num" id="timer"></span><button class="primary" id="val">Reveal the real value</button>`;
-        $("#t15").onclick = ()=>startTimer(15);
+      } else if(r.reason === "tie"){
+        r.top.forEach(i => packs[i].classList.add("tie"));
+        packs.forEach((p,i)=>{ if(!r.top.includes(i)) p.classList.add("dim"); });
+        Sound.tie();
+        big.textContent = `Tie at ${eur(r.price)}!`; sub.textContent = "Nobody gets this asset, and nobody pays.";
+        after.innerHTML = `<button class="primary" id="val">Reveal what it was worth</button>`;
       } else {
-        v.textContent = r.reason==="tie" ? `Tie at ${eur(r.price)}! Nobody gets this asset.` : "No bids. Nobody gets this asset.";
+        packs.forEach(p=>p.classList.add("dim"));
+        big.textContent = "No bids"; sub.textContent = "Nobody gets this asset.";
         after.innerHTML = `<button class="primary" id="val">Reveal what it was worth</button>`;
       }
-      v.classList.add("pop"); after.hidden = false;
+      $("#banner").classList.add("show"); after.hidden = false; revealDone = true; broadcast();
+      const t15 = $("#t15"); if(t15) t15.onclick = ()=>startTimer(15);
       $("#val").onclick = ()=>{
         if(r.winner!==null){ S.cash[r.winner] -= r.price; S.owned[r.winner].push(S.i); }
         S.phase="value"; render();
       };
-    }, 300 + order.length*step + 250);
+    })();
   }
 
   function value(st){
@@ -501,17 +673,17 @@ function startHost(){
     let stats = `<div class="stat big pop"><span class="k">Real value</span><span class="v">${eur(a.value)}</span></div>`;
     if(r.winner!==null){
       const p = a.value - r.price, g = GROUPS[r.winner];
-      stats += `<div class="stat"><span class="k">${g.name} paid</span><span class="v">${eur(r.price)}</span></div>
+      stats += `<div class="stat"><span class="k" style="color:${g.color}">${g.name} paid</span><span class="v">${eur(r.price)}</span></div>
         <div class="stat"><span class="k">${p>=0?"Profit":"Loss"}</span><span class="v ${p>=0?"good":"bad"}">${p>=0?"+":"−"}${eur(Math.abs(p))}</span></div>`;
     } else {
-      stats += `<div class="stat"><span class="k">Bought by</span><span class="v" style="font-size:1.6rem">Nobody</span></div>`;
+      stats += `<div class="stat"><span class="k">Bought by</span><span class="v" style="font-size:1.8rem">Nobody</span></div>`;
     }
     const last = S.i === ASSETS.length-1;
     st.innerHTML = `
       ${lotHead(a)}
       <div class="value">${stats}</div>
       <div class="why">${esc(a.why)}<span class="src">${esc(a.src)}</span></div>
-      <div class="actions"><button class="primary" id="next">${last?"Show final scores":"Next asset"}</button></div>`;
+      <div class="actions center"><button class="primary" id="next">${last?"Show final scores":"Next asset"}</button></div>`;
     $("#next").onclick = ()=>{
       if(last){ S.phase="final"; } else { S.i++; S.phase="bidding"; S.bids=[null,null,null]; S.via=[null,null,null]; S.result=null; }
       render();
@@ -531,18 +703,20 @@ function startHost(){
           <span class="tot">${eur(x.tot)}</span>
         </div>`).join("")}</div>
       <div class="why">Which asset did you misjudge, and which week 5 reading would have warned you?</div>`;
+    setTimeout(()=>{ const f = st.querySelector(".rk.first"); if(f){ Sound.win(); confetti(f); } }, 300);
   }
 
-  function bindReset(){
-    $("#resetBox").innerHTML = `<button class="ghost" id="resetBtn">Reset game</button>`;
+  function bindFoot(){
+    $("#resetBox").innerHTML = `<button class="ghost" id="snd">${Sound.on ? "Sound on" : "Sound off"}</button> <button class="ghost" id="resetBtn">Reset game</button>`;
+    $("#snd").onclick = ()=>{ Sound.on = !Sound.on; if(Sound.on) Sound.unlock(); bindFoot(); };
     $("#resetBtn").onclick = ()=>{
-      $("#resetBox").innerHTML = `<span class="confirm">Start over and erase all scores? <button id="yes">Yes, reset</button><button class="ghost" id="no">Cancel</button></span>`;
-      $("#yes").onclick = ()=>{ S = fresh(); bindReset(); render(); };
-      $("#no").onclick = bindReset;
+      $("#resetBox").innerHTML = `<span class="confirm">Start over, erase all scores and free all groups? <button id="yes">Yes, reset</button><button class="ghost" id="no">Cancel</button></span>`;
+      $("#yes").onclick = ()=>{ S = fresh(); bindFoot(); render(); };
+      $("#no").onclick = bindFoot;
     };
   }
 
-  bindReset(); render(); openPeer();
+  bindFoot(); render(); openPeer();
 }
 
 /* =========================================================
@@ -550,10 +724,10 @@ function startHost(){
    ========================================================= */
 function startPlayer(code){
   document.getElementById("playerView").hidden = false;
-  const GKEY = "ai-auction-group-" + code;
-  let group = store.get(GKEY);
-  if(group!==0 && group!==1 && group!==2) group = null;
-  let peer = null, conn = null, online = false, st = null, ackMsg = "", sending = false, editing = false;
+  const TKEY = "ai-auction-token-" + code;
+  let token = store.get(TKEY);
+  if(typeof token !== "string"){ token = Math.random().toString(36).slice(2) + Date.now().toString(36); store.set(TKEY, token); }
+  let peer = null, conn = null, online = false, st = null, ackMsg = "", denyMsg = "", sending = false, editing = false;
   let tEnd = 0, tId = null;
 
   function connect(){
@@ -569,40 +743,47 @@ function startPlayer(code){
     if(!peer || peer.disconnected) return;
     if(conn && conn.open) return;
     conn = peer.connect(PEER_PREFIX + code, {reliable:true});
-    conn.on("open", () => { online = true; hello(); paint(); });
+    conn.on("open", () => { online = true; send({t:"hello"}); paint(); });
     conn.on("data", msg => {
       if(!msg || typeof msg!=="object") return;
       if(msg.t==="state"){
         const prev = st; st = msg;
         if(!prev || prev.i!==st.i || prev.phase!==st.phase){ ackMsg=""; editing=false; }
+        if(st.me !== null) denyMsg = "";
         if(st.mine===null) sending=false;
         tEnd = st.timer ? Date.now()+st.timer : 0; runTimer();
         paint();
       }
+      if(msg.t==="denied"){ denyMsg = msg.msg; paint(); }
       if(msg.t==="ack"){ sending=false; ackMsg = msg.ok ? "" : msg.msg; if(msg.ok) editing=false; paint(); }
     });
     conn.on("close", () => { online = false; paint(); setTimeout(dial, 1500); });
     conn.on("error", () => { online = false; paint(); });
   }
-  function hello(){ if(conn && conn.open) conn.send({t:"hello", group}); }
+  function send(m){ if(conn && conn.open){ m.token = token; conn.send(m); } }
   function runTimer(){
     if(tId){ clearInterval(tId); tId=null; }
     if(!tEnd) return;
-    tId = setInterval(() => { const el=$("#ptimer"); const t=Math.ceil((tEnd-Date.now())/1000); if(el){ el.textContent = t>0? t+"s left" : "Time!"; } if(t<=0){ clearInterval(tId); tId=null; } }, 250);
+    const tick = () => { const el=$("#ptimer"); const t=Math.ceil((tEnd-Date.now())/1000); if(el){ el.textContent = t>0? t+"s left" : "Time is up"; } if(t<=0){ clearInterval(tId); tId=null; } };
+    tick(); tId = setInterval(tick, 250);
   }
   document.addEventListener("visibilitychange", () => { if(!document.hidden && !(conn && conn.open)) connect(); });
 
   function paint(){
     const v = $("#playerView");
-    const G = group!==null ? GROUPS[group] : null;
+    const group = st ? st.me : null;
+    const G = group!==null && group!==undefined ? GROUPS[group] : null;
     const status = online ? `<span class="pill"><span class="dot on"></span>Connected</span>`
       : `<span class="pill"><span class="dot off"></span>${typeof Peer==="undefined" ? "Can't load" : "Connecting…"}</span>`;
     let body = "";
-    if(group===null){
-      body = `<div class="pcard"><h2>Which group are you in?</h2>
-        <div class="pick">${GROUPS.map(g=>`<button data-g="${g.id}" style="--c:${g.color};color:${g.color}">${g.name}</button>`).join("")}</div></div>`;
-    } else if(!st){
-      body = `<div class="pcard" style="--c:${G.color}"><h2>Joining the auction…</h2><p class="small">Keep this page open. If it takes long, check you're on the same Wi-Fi or switch to mobile data.</p></div>`;
+    if(!st){
+      body = `<div class="pcard"><h2>Joining the auction…</h2><p class="small">Keep this page open. If it takes long, switch between Wi-Fi and mobile data.</p></div>`;
+    } else if(!G){
+      const locked = st.started;
+      body = `<div class="pcard"><h2>${locked ? "Pick an open group" : "Which group are you in?"}</h2>
+        <p class="small">One phone per group.${locked ? " The auction has started: you can only take a group that has no phone yet." : " You can switch until the auction starts."}</p>
+        <div class="pick">${GROUPS.map(g=>`<button data-g="${g.id}" style="--c:${g.color};color:${g.color}" ${st.taken[g.id]?"disabled":""}>${g.name}${st.taken[g.id]?" · taken":""}</button>`).join("")}</div>
+        <div class="small" style="color:var(--bad)">${esc(denyMsg)}</div></div>`;
     } else if(st.phase==="intro"){
       body = `<div class="pcard" style="--c:${G.color}"><div class="eyebrow">You're in</div><h1 style="color:${G.color}">${G.name}</h1>
         <p class="lede">You have €100M. Wait for the auction to start. Bids appear here.</p></div>`;
@@ -611,20 +792,22 @@ function startPlayer(code){
       const head = `<div class="eyebrow">Lot ${st.i+1} of ${st.total}</div><h2>${esc(st.asset.name)}</h2><p class="small">${esc(st.asset.desc)}</p>`;
       if(mine!==null && !editing){
         body = `<div class="pcard" style="--c:${G.color}">${head}
-          <div class="small">Your group's secret bid</div><div class="pbig">${eur(mine)} ✓</div>
-          <p class="small">Wait for the reveal on the big screen. <span id="ptimer"></span></p>
+          <div class="small">${G.name}'s bid</div><div class="pbig">${eur(mine)} ✓</div>
+          <p class="small">Watch the big screen for the reveal. <span id="ptimer"></span></p>
           <button id="change">Change bid</button></div>`;
       } else {
         body = `<div class="pcard" style="--c:${G.color}">${head}
           <div class="small">${G.name} has <b class="num">${eur(st.cash[group])}</b> · <span id="ptimer"></span></div>
-          <label for="amt" class="small">Your secret bid (in millions)</label>
+          <label for="amt" class="small">Your bid (in millions)</label>
           <div class="pin"><span>€</span><input id="amt" type="number" inputmode="numeric" min="0" max="${st.cash[group]}" step="1" placeholder="0"><span>M</span></div>
           <button class="primary" id="send" ${sending||!online?"disabled":""}>${sending?"Sending…":"Submit bid"}</button>
           <div class="small" style="color:var(--bad)">${esc(ackMsg)}</div></div>`;
       }
+    } else if(st.phase==="reveal" && !st.revealed){
+      body = `<div class="pcard" style="--c:${G.color}"><div class="eyebrow">Lot ${st.i+1}: ${esc(st.asset.name)}</div>
+        <h2>Revealing the bids…</h2><p class="lede">Look at the big screen!</p></div>`;
     } else if(st.phase==="reveal" || st.phase==="value"){
       const r = st.result || {};
-      const list = GROUPS.map(g=>({g,b:st.bids[g.id]})).sort((a,b)=>a.b-b.b);
       let verdict = r.winner===null || r.winner===undefined
         ? (r.reason==="tie" ? `Tie at ${eur(r.price)}. Nobody gets it.` : "No bids. Nobody gets it.")
         : `${GROUPS[r.winner].name} wins for ${eur(r.price)}`;
@@ -636,7 +819,7 @@ function startPlayer(code){
       } else val = `<p class="small">Watch the big screen for the real value.</p>`;
       body = `<div class="pcard" style="--c:${G.color}"><div class="eyebrow">Lot ${st.i+1}: ${esc(st.asset.name)}</div>
         <h2>${verdict}</h2>
-        <div class="plist">${list.map(x=>`<div style="--c:${x.g.color}"><span>${x.g.name}</span><b class="num">${eur(x.b)}</b></div>`).join("")}</div>${val}
+        <div class="plist">${GROUPS.map(g=>`<div style="--c:${g.color}"><span>${g.name}${r.winner===g.id?" 👑":""}</span><b class="num">${eur(st.bids[g.id])}</b></div>`).join("")}</div>${val}
         <div class="small">${G.name} now has <b class="num">${eur(st.cash[group])}</b> to spend.</div></div>`;
     } else if(st.phase==="final"){
       const me = st.rank.findIndex(x=>x.g===group);
@@ -646,28 +829,30 @@ function startPlayer(code){
     }
     const prevAmt = $("#amt") ? $("#amt").value : "", hadFocus = document.activeElement && document.activeElement.id === "amt";
     v.innerHTML = `<div class="phead"><div class="brand" style="font-size:1.1rem">AI Asset Auction</div>${status}</div>${body}
-      ${group!==null ? `<div style="text-align:center"><button class="linkbtn" id="switch">Wrong group? Switch</button></div>` : ""}`;
-
+      ${G && st && !st.started ? `<div style="text-align:center"><button class="linkbtn" id="switch">Wrong group? Switch</button></div>` : ""}
+      ${G && st && st.started ? `<div class="small" style="text-align:center">🔒 Locked to ${G.name}</div>` : ""}`;
     if($("#amt")){ if(prevAmt) $("#amt").value = prevAmt; if(hadFocus) $("#amt").focus(); }
-    v.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { group = Number(b.dataset.g); store.set(GKEY, group); hello(); paint(); });
-    const sw = $("#switch"); if(sw) sw.onclick = () => { group = null; store.set(GKEY, null); hello(); paint(); };
+    v.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { denyMsg = ""; send({t:"claim", group:Number(b.dataset.g)}); });
+    const sw = $("#switch"); if(sw) sw.onclick = () => send({t:"release"});
     const ch = $("#change"); if(ch) ch.onclick = () => { editing = true; paint(); };
-    const send = $("#send"), amt = $("#amt");
-    if(send){
+    const sb = $("#send"), amt = $("#amt");
+    if(sb){
       const go = () => {
         const raw = (amt.value||"").trim();
         if(!/^\d+$/.test(raw)){ ackMsg = "Type a whole number, like 25."; paint(); return; }
         const n = parseInt(raw,10);
         if(n > st.cash[group]){ ackMsg = `Too high: you only have ${eur(st.cash[group])}.`; paint(); return; }
         if(!(conn && conn.open)){ ackMsg = "Not connected yet. Try again in a second."; paint(); return; }
-        sending = true; ackMsg = ""; conn.send({t:"bid", round:st.i, amount:n}); paint();
+        sending = true; ackMsg = ""; send({t:"bid", round:st.i, amount:n}); paint();
       };
-      send.onclick = go; amt.onkeydown = e => { if(e.key==="Enter") go(); };
+      sb.onclick = go; amt.onkeydown = e => { if(e.key==="Enter") go(); };
     }
   }
 
   paint(); connect();
 }
+
+if (JOIN) startPlayer(JOIN); else startHost();
 
 </script>
 </body>
