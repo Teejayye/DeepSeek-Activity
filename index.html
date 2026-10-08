@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI Asset Auction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+[hidden]{display:none!important}
+/* Layout: projector screen. Scoreboard strip on top, one big stage below that changes per phase. Single deliberate dark theme (auction-room at night, brass gavel accent). */
+:root{
+  color-scheme: dark;
+  --bg:#12141c; --panel:#1b1e2a; --panel2:#232738; --line:#2f3448;
+  --fg:#eef0f6; --muted:#9aa1b8;
+  --brass:#e2b04a; --brass-ink:#1a1408;
+  --g1:#ff7a6b; --g2:#3fc7b4; --g3:#a98bff;
+  --good:#5bd68a; --bad:#ff6b7d;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"DM Sans", "Segoe UI", system-ui, sans-serif;
+  --f-num:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.45;margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:16px 32px;display:flex;flex-direction:column;gap:16px;min-height:100%}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:12px 20px;font-weight:700;background:var(--panel2);color:var(--fg)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+button.primary{background:var(--brass);color:var(--brass-ink);font-size:1.1rem;padding:14px 26px}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:500}
+button:disabled{opacity:.4;cursor:not-allowed}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.35rem;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.brand .gavel{width:28px;height:28px}
+.round{color:var(--muted);font-weight:500}
+.round b{color:var(--fg)}
+
+/* scoreboard */
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.team{background:var(--panel);border-radius:14px;padding:14px 16px;border-top:5px solid var(--c);display:flex;flex-direction:column;gap:6px;min-width:0}
+.team h3{margin:0;font-family:var(--f-display);font-size:1.15rem;color:var(--c)}
+.team .row{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:.92rem}
+.team .row .num{color:var(--fg);font-size:1.05rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;min-height:26px}
+.chip{font-size:.78rem;background:var(--panel2);border-radius:999px;padding:3px 10px;color:var(--fg)}
+
+/* stage */
+.stage{background:var(--panel);border-radius:18px;padding:28px;flex:1;display:flex;flex-direction:column;gap:22px;min-width:0}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.8rem;color:var(--brass);font-weight:700}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,4.6vw,3.6rem);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.02em}
+h2{font-family:var(--f-display);font-weight:700;font-size:clamp(1.4rem,2.6vw,2rem);margin:0;text-wrap:balance}
+.lede{color:var(--muted);font-size:clamp(1.05rem,1.6vw,1.3rem);max-width:60ch;margin:0}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+/* rules on intro */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:0;padding:0;list-style:none;counter-reset:r}
+.rules li{background:var(--panel2);border-radius:12px;padding:14px 16px;counter-increment:r;display:flex;gap:12px;min-width:0}
+.rules li::before{content:counter(r);font-family:var(--f-num);color:var(--brass);font-weight:700}
+
+/* lot card */
+.lot{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.lot .lotno{font-family:var(--f-num);color:var(--brass);font-size:1rem;border:2px solid var(--brass);border-radius:8px;padding:4px 10px;white-space:nowrap}
+.lot .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+
+/* timer */
+.timer{font-family:var(--f-num);font-size:2.2rem;font-weight:700;min-width:4ch;text-align:center;color:var(--fg)}
+.timer.low{color:var(--bad)}
+
+/* bid entry */
+.bids{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.bid{background:var(--panel2);border-radius:14px;padding:16px;border-left:5px solid var(--c);display:flex;flex-direction:column;gap:10px;min-width:0}
+.bid label{font-weight:700;color:var(--c)}
+.bid .field{display:flex;gap:8px;align-items:center}
+.bid .field span{color:var(--muted);font-family:var(--f-num)}
+.bid input{flex:1;min-width:0;font-family:var(--f-num);font-size:1.4rem;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.bid .hint{font-size:.85rem;color:var(--muted);min-height:1.2em}
+.bid .hint.err{color:var(--bad)}
+.locked{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:1.25rem;font-weight:700;color:var(--good);min-height:52px}
+
+/* reveal */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;perspective:900px}
+.card{border-radius:16px;min-height:170px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.card .face{position:absolute;inset:0;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;backface-visibility:hidden;padding:12px;text-align:center}
+.card .back{background:repeating-linear-gradient(45deg,var(--panel2) 0 12px,#262b3e 12px 24px);border:2px solid var(--line);font-family:var(--f-display);font-size:2.6rem;color:var(--muted)}
+.card .front{background:var(--panel2);border:3px solid var(--c);transform:rotateY(180deg)}
+.card.flipped{transform:rotateY(180deg)}
+.card .who{font-weight:700;color:var(--c)}
+.card .amt{font-family:var(--f-num);font-size:clamp(2rem,4vw,3rem);font-weight:700}
+.card .tag{font-size:.85rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card.win .front{background:var(--c);color:var(--brass-ink)}
+.card.win .who,.card.win .tag{color:var(--brass-ink)}
+.verdict{font-family:var(--f-display);font-size:clamp(1.5rem,3vw,2.3rem);font-weight:800;min-height:1.3em}
+
+/* value reveal */
+.value{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.stat{background:var(--panel2);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat .k{color:var(--muted);font-size:.9rem}
+.stat .v{font-family:var(--f-num);font-size:clamp(1.8rem,3.6vw,2.8rem);font-weight:700}
+.stat.big{background:var(--brass);color:var(--brass-ink)}
+.stat.big .k{color:var(--brass-ink)}
+.good{color:var(--good)} .bad{color:var(--bad)}
+.why{background:var(--panel2);border-radius:14px;padding:16px 18px;font-size:1.1rem;max-width:80ch;border-left:4px solid var(--brass)}
+.why .src{display:block;color:var(--muted);font-size:.9rem;margin-top:6px}
+.pop{animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:.2}to{transform:scale(1);opacity:1}}
+
+/* final */
+.rank{display:flex;flex-direction:column;gap:12px}
+.rk{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;background:var(--panel2);border-radius:14px;padding:16px 20px;border-left:6px solid var(--c)}
+.rk .pos{font-family:var(--f-num);font-size:1.6rem;color:var(--muted)}
+.rk .name{font-family:var(--f-display);font-size:1.4rem;font-weight:700;color:var(--c)}
+.rk .detail{color:var(--muted);font-size:.92rem}
+.rk .tot{font-family:var(--f-num);font-size:2rem;font-weight:700}
+.rk.first{background:var(--c);color:var(--brass-ink)}
+.rk.first .name,.rk.first .pos,.rk.first .detail{color:var(--brass-ink)}
+
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:.85rem}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+@media (max-width:760px){
+  .board,.bids,.cards{grid-template-columns:1fr}
+  .stage{padding:18px}
+  .card{min-height:120px}
+}
+@media (prefers-reduced-motion:reduce){
+  .card{transition:none}
+  .pop{animation:none}
+}
+/* online additions */
+.joinbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border-radius:999px;padding:5px 12px;font-size:.85rem;color:var(--muted)}
+.pill b{color:var(--fg);font-family:var(--f-num)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--good)} .dot.off{background:var(--bad)}
+.joinbox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:center;background:var(--panel2);border-radius:16px;padding:20px}
+.qr{background:#fff;padding:12px;border-radius:12px;width:232px;height:232px;display:flex;align-items:center;justify-content:center}
+.qr img,.qr canvas{width:208px!important;height:208px!important}
+.joinurl{font-family:var(--f-num);font-size:.95rem;word-break:break-all;color:var(--brass)}
+.overlay{position:fixed;inset:0;background:rgba(10,11,16,.86);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.overlay .joinbox{max-width:760px;width:100%}
+.src-phone{font-size:.8rem;color:var(--muted);font-weight:500}
+.warn{background:#3a2a14;color:#f3d6a0;border-radius:12px;padding:12px 16px}
+@media (max-width:760px){ .joinbox{grid-template-columns:1fr;justify-items:center;text-align:center} }
+
+/* player (phone) */
+.player{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;display:flex;flex-direction:column;gap:16px;min-height:100%}
+.phead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pcard{background:var(--panel);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;border-top:5px solid var(--c, var(--brass))}
+.pick{display:flex;flex-direction:column;gap:12px}
+.pick button{font-size:1.3rem;padding:20px;border-left:6px solid var(--c);text-align:left}
+.pbig{font-family:var(--f-num);font-size:2.4rem;font-weight:700}
+.pin{display:flex;gap:8px;align-items:center}
+.pin input{flex:1;min-width:0;font-family:var(--f-num);font-size:1.8rem;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.pin span{font-family:var(--f-num);color:var(--muted);font-size:1.3rem}
+.plist{display:flex;flex-direction:column;gap:8px}
+.plist div{display:flex;justify-content:space-between;background:var(--panel2);border-radius:10px;padding:10px 14px;border-left:4px solid var(--c)}
+.small{font-size:.85rem;color:var(--muted)}
+.linkbtn{background:none;color:var(--muted);text-decoration:underline;padding:4px;font-weight:500}
+
+</style>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="wrap" id="hostView" hidden>
+  <header class="top">
+    <div class="brand">
+      <svg class="gavel" viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#e2b04a" stroke-width="2.6" stroke-linecap="round"><path d="M6 26h12"/><path d="M14 13l9 9"/><rect x="8" y="5" width="12" height="7" rx="2" transform="rotate(45 14 8.5)" fill="#e2b04a"/></g></svg>
+      AI Asset Auction
+    </div>
+    <div class="joinbar" id="net"></div>
+    <div class="round" id="roundLabel"></div>
+  </header>
+  <section class="board" id="board" aria-label="Scoreboard"></section>
+  <main class="stage" id="stage" aria-live="polite"></main>
+  <footer class="foot">
+    <span>Team G · DeepSeek and Open-Source AI · Tutorial 5</span>
+    <span id="resetBox"></span>
+  </footer>
+</div>
+<div class="player" id="playerView" hidden></div>
+<script>
+const START = 100;
+const GROUPS = [
+  {id:0, name:"Group 1", color:"var(--g1)"},
+  {id:1, name:"Group 2", color:"var(--g2)"},
+  {id:2, name:"Group 3", color:"var(--g3)"}
+];
+const ASSETS = [
+  {name:"50 million free app users", desc:"A hugely popular free chatbot app with 50 million users.", value:20,
+   why:"Popular, but free users don't pay. Unlike normal software, every AI answer costs computing power, so more free users means more costs, not more money. The value of AI comes from what people do with it, not how many try it.",
+   src:"Lecture 5 on digital goods · Mollick & Euchner (2023)"},
+  {name:"20 top AI researchers", desc:"A team of elite engineers who can build better, cheaper models.", value:65,
+   why:"AI makes prediction cheap, so human judgment becomes the scarce input, including designing the reward function that tells the AI what is good. That is exactly what DeepSeek's small team did with R1.",
+   src:"Agrawal, Gans & Goldfarb (2017)"},
+  {name:"A huge dataset scraped from the internet (unchecked)", desc:"Billions of web pages. Nobody has checked what is in it.", value:10,
+   why:"Big doesn't mean good. Unchecked data is messy, biased and legally risky, and an AI trained on it repeats that bias. High volume, low veracity: garbage in, garbage out.",
+   src:"O'Neil (2017) · Hurwitz & Kirsch (2018) · the four Vs from lecture 5"},
+  {name:"International trust in your model", desc:"Governments and companies worldwide accept and trust your model.", value:55,
+   why:"People shouldn't blindly trust algorithms, so trust has to be earned. DeepSeek was banned in several countries over privacy and security worries. Trust opens those closed markets.",
+   src:"O'Neil (2017) · AI ethics, lecture 5"},
+  {name:"10,000 Huawei chips", desc:"A guaranteed supply of computing power, but about 30% slower than Nvidia.", value:80,
+   why:"No chips, no AI. Machine learning, and especially reinforcement learning, needs huge computing power to learn by trial and error. US export controls block Nvidia, so a guaranteed supply beats faster chips you can't get.",
+   src:"Hurwitz & Kirsch (2018) · Edureka video on reinforcement learning"},
+  {name:"Partnership with WeChat", desc:"Your AI is built into the super-app, but Tencent owns the users.", value:45,
+   why:"AI creates value when it is built into tasks people already do. Inside WeChat your AI reaches a billion people's daily routine, but Tencent owns the customers and can drop you.",
+   src:"Cromwell et al. (2023)"}
+];
+
+const SHORT = ["Free users","Researchers","Scraped data","Global trust","Huawei chips","WeChat"];
+const PEER_PREFIX = "teamg-ai-auction-";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const eur = n => "€" + n + "M";
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const params = new URLSearchParams(location.search);
+const JOIN = params.get("join");
+
+if (JOIN) startPlayer(JOIN); else startHost();
+
+/* =========================================================
+   HOST (projector laptop)
+   ========================================================= */
+function startHost(){
+  document.getElementById("hostView").hidden = false;
+  const KEY = "ai-auction-online-v1";
+  const fresh = () => ({phase:"intro", i:0, cash:[START,START,START], owned:[[],[],[]], bids:[null,null,null], via:[null,null,null], result:null});
+  let S = store.get(KEY); if(!S || !S.cash) S = fresh();
+  if(S.phase==="reveal") S.phase="bidding";
+  const save = () => store.set(KEY, S);
+
+  /* ---------- networking ---------- */
+  let peer = null, conns = [], netState = "connecting", joinUrl = "";
+  let code = store.get(KEY+"-code");
+  if(!code){ code = Math.random().toString(36).slice(2,8); store.set(KEY+"-code", code); }
+  let tries = 0;
+  function openPeer(){
+    if(typeof Peer === "undefined"){ netState = "failed"; paintNet(); return; }
+    peer = new Peer(PEER_PREFIX + code, window.PEER_OPTS || {});
+    peer.on("open", () => {
+      netState = "online"; tries = 0;
+      joinUrl = location.origin + location.pathname + "?join=" + code;
+      paintNet(); paintQR();
+    });
+    peer.on("connection", conn => {
+      conn.group = null;
+      conn.on("open", () => { conns.push(conn); sendState(conn); paintNet(); });
+      conn.on("data", msg => onMsg(conn, msg));
+      conn.on("close", () => { conns = conns.filter(c => c !== conn); paintNet(); });
+      conn.on("error", () => {});
+    });
+    peer.on("disconnected", () => { netState = "connecting"; paintNet(); setTimeout(() => { try{ peer.reconnect(); }catch(e){} }, 1500); });
+    peer.on("error", err => {
+      if(err.type === "unavailable-id" && tries < 5){ tries++; peer.destroy(); setTimeout(openPeer, 3000); return; }
+      if(err.type === "unavailable-id"){ code = Math.random().toString(36).slice(2,8); store.set(KEY+"-code", code); peer.destroy(); setTimeout(openPeer, 500); return; }
+      if(["network","server-error","socket-error","socket-closed","browser-incompatible"].includes(err.type)){ netState = "failed"; paintNet(); }
+    });
+  }
+  function onMsg(conn, msg){
+    if(!msg || typeof msg !== "object") return;
+    if(msg.t === "hello"){
+      const g = Number(msg.group);
+      conn.group = (g===0||g===1||g===2) ? g : null;
+      sendState(conn); paintNet(); return;
+    }
+    const g = conn.group;
+    if(g === null) return;
+    if(msg.t === "bid"){
+      const n = Number(msg.amount);
+      let err = null;
+      if(S.phase !== "bidding" || msg.round !== S.i) err = "Bidding for this asset is closed.";
+      else if(!Number.isInteger(n) || n < 0) err = "Type a whole number, like 25.";
+      else if(n > S.cash[g]) err = `Too high: you only have ${eur(S.cash[g])}.`;
+      if(err){ safeSend(conn, {t:"ack", ok:false, msg:err}); return; }
+      S.bids[g] = n; S.via[g] = "phone";
+      safeSend(conn, {t:"ack", ok:true});
+      if(S.phase === "bidding") refreshBidding();
+      return;
+    }
+    if(msg.t === "unbid"){
+      if(S.phase === "bidding" && msg.round === S.i){ S.bids[g] = null; S.via[g] = null; refreshBidding(); }
+    }
+  }
+  function safeSend(conn, data){ try{ if(conn.open) conn.send(data); }catch(e){} }
+  function stateFor(g){
+    const a = ASSETS[S.i];
+    const out = {t:"state", phase:S.phase, i:S.i, total:ASSETS.length,
+      asset:{name:a.name, desc:a.desc}, cash:S.cash,
+      locked:S.bids.map(b => b!==null),
+      mine: g===null ? null : S.bids[g],
+      timer: timerEnd ? Math.max(0, timerEnd - Date.now()) : 0};
+    if(S.phase === "reveal" || S.phase === "value"){ out.bids = S.bids; out.result = S.result; }
+    if(S.phase === "value"){ out.value = a.value; out.why = a.why; }
+    if(S.phase === "final"){ out.rank = ranking().map(x => ({g:x.g.id, cash:x.cash, av:x.av, tot:x.tot})); }
+    return out;
+  }
+  function sendState(conn){ safeSend(conn, stateFor(conn.group)); }
+  function broadcast(){ conns.forEach(sendState); }
+
+  function counts(){ const c=[0,0,0]; conns.forEach(k => { if(k.group!==null) c[k.group]++; }); return c; }
+  function paintNet(){
+    const el = $("#net"); if(!el) return;
+    const c = counts();
+    const dot = netState==="online" ? "on" : netState==="failed" ? "off" : "";
+    const label = netState==="online" ? "Phones can join" : netState==="failed" ? "Phones can't connect: type bids here" : "Connecting…";
+    el.innerHTML = `<span class="pill"><span class="dot ${dot}"></span>${label}</span>
+      ${GROUPS.map(g=>`<span class="pill" style="color:${g.color}">${g.name.replace("Group ","G")} <b>${c[g.id]}</b> 📱</span>`).join("")}
+      <button class="ghost" id="showQR" ${netState==="online"?"":"disabled"}>Show join code</button>`;
+    $("#showQR").onclick = showOverlay;
+    const ic = $("#introCounts"); if(ic) ic.innerHTML = GROUPS.map(g=>`<span class="pill" style="color:${g.color}">${g.name}: <b>${c[g.id]}</b> phone${c[g.id]===1?"":"s"}</span>`).join(" ");
+    const iw = $("#introNet"); if(iw) iw.hidden = netState !== "failed";
+  }
+  function qrInto(el){
+    if(!el || !joinUrl) return;
+    el.innerHTML = "";
+    if(typeof QRCode === "undefined"){ el.textContent = "QR unavailable"; return; }
+    new QRCode(el, {text: joinUrl, width: 208, height: 208, correctLevel: QRCode.CorrectLevel.M});
+  }
+  function paintQR(){ qrInto($("#qrIntro")); const u = $("#urlIntro"); if(u) u.textContent = joinUrl; }
+  function showOverlay(){
+    const o = document.createElement("div"); o.className = "overlay"; o.id = "ov";
+    o.innerHTML = `<div class="joinbox"><div class="qr" id="qrOv"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:0"><h2>Scan to join</h2>
+      <p class="lede">Open your camera, scan the code, then tap your group.</p>
+      <div class="joinurl">${esc(joinUrl)}</div><div class="actions"><button class="primary" id="closeOv">Close</button></div></div></div>`;
+    document.body.appendChild(o); qrInto($("#qrOv"));
+    $("#closeOv").onclick = () => o.remove();
+    o.onclick = e => { if(e.target === o) o.remove(); };
+  }
+
+  /* ---------- timer ---------- */
+  let timerId = null, timerEnd = 0;
+  function stopTimer(){ if(timerId){ clearInterval(timerId); timerId = null; } }
+  function paintTimer(){
+    const el = $("#timer"); if(!timerEnd) return;
+    const t = Math.ceil((timerEnd - Date.now())/1000);
+    if(el){ el.textContent = t>0 ? t : "Time!"; el.classList.toggle("low", t<=5); }
+    if(t<=0){ stopTimer(); timerEnd = 0; }
+  }
+  function startTimer(secs){ stopTimer(); timerEnd = Date.now() + secs*1000; paintTimer(); timerId = setInterval(paintTimer, 250); broadcast(); }
+
+  /* ---------- game ---------- */
+  const assetVal = g => S.owned[g].reduce((a,k)=>a+ASSETS[k].value,0);
+  const ranking = () => GROUPS.map(g=>({g, cash:S.cash[g.id], av:assetVal(g.id), tot:S.cash[g.id]+assetVal(g.id)})).sort((a,b)=> b.tot-a.tot || b.cash-a.cash);
+
+  function renderBoard(){
+    $("#board").innerHTML = GROUPS.map(g=>`
+      <div class="team" style="--c:${g.color}">
+        <h3>${g.name}</h3>
+        <div class="row"><span>Spendable money</span><span class="num">${eur(S.cash[g.id])}</span></div>
+        <div class="row"><span>Asset value</span><span class="num">${eur(assetVal(g.id))}</span></div>
+        <div class="chips">${S.owned[g.id].map(k=>`<span class="chip">${SHORT[k]}</span>`).join("") || `<span class="chip" style="opacity:.5">No assets yet</span>`}</div>
+      </div>`).join("");
+    const r = $("#roundLabel");
+    if(S.phase==="intro") r.textContent = "6 assets · 3 groups · €100M each";
+    else if(S.phase==="final") r.textContent = "Game over";
+    else r.innerHTML = `Asset <b>${S.i+1}</b> of ${ASSETS.length}`;
+  }
+
+  function render(){
+    stopTimer(); timerEnd = 0; renderBoard(); save();
+    const st = $("#stage");
+    ({intro, bidding, reveal, value, final})[S.phase](st);
+    paintNet(); broadcast();
+  }
+
+  function intro(st){
+    st.innerHTML = `
+      <div class="eyebrow">You are three rival AI start-ups</div>
+      <h1>Six assets. One secret bid each. Spend wisely.</h1>
+      <div class="joinbox">
+        <div class="qr" id="qrIntro">${joinUrl ? "" : "Connecting…"}</div>
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <h2>Scan to join your group</h2>
+          <p class="lede" style="margin:0">One phone per group is enough. More is fine: the latest bid sent from any phone in a group counts.</p>
+          <div class="joinurl" id="urlIntro"></div>
+          <div id="introCounts" class="joinbar"></div>
+          ${location.protocol==="file:" ? `<div class="warn">This file is opened from your computer, so phones can't reach it. Upload it to GitHub Pages or Netlify first and open that link instead.</div>` : ""}
+          <div class="warn" id="introNet" hidden>Phones can't connect on this network. You can still play: type each group's bid into its box on this screen.</div>
+        </div>
+      </div>
+      <ol class="rules">
+        <li>One asset at a time. Groups get 30 seconds to agree on one secret bid.</li>
+        <li>All bids are revealed at once. The highest bid wins the asset and pays. Others pay nothing.</li>
+        <li>A tie for the highest bid means nobody gets the asset.</li>
+        <li>You can bid €0, but never more than you have left.</li>
+        <li>The winning group explains why they bid that amount. Then the real value is revealed.</li>
+        <li>Final score = money left + real value of your assets. Highest score wins.</li>
+      </ol>
+      <div class="actions"><button class="primary" id="go">Start the auction</button></div>`;
+    paintQR();
+    $("#go").onclick = ()=>{ S.phase="bidding"; S.bids=[null,null,null]; S.via=[null,null,null]; render(); };
+  }
+
+  function lotHead(a){
+    return `<div class="lot"><span class="lotno">LOT ${S.i+1}/${ASSETS.length}</span>
+      <div class="txt"><h1>${esc(a.name)}</h1><p class="lede">${esc(a.desc)}</p></div></div>`;
+  }
+
+  function bidBox(g){
+    const b = S.bids[g.id];
+    return `<div class="bid" style="--c:${g.color}">
+      <label for="in${g.id}">${g.name} · has ${eur(S.cash[g.id])}</label>
+      ${b===null ? `
+        <div class="field"><span>€</span><input id="in${g.id}" type="password" inputmode="numeric" autocomplete="off" placeholder="waiting for phone…" aria-describedby="h${g.id}"><span>M</span></div>
+        <button id="lock${g.id}">Lock bid</button>
+        <div class="hint" id="h${g.id}">Bid from a phone, or type it here (hidden).</div>`
+      : `<div class="locked"><span>Bid locked ✓ <span class="src-phone">${S.via[g.id]==="phone"?"from phone":"typed here"}</span></span><button class="ghost" id="edit${g.id}">Clear</button></div>
+        <div class="hint">Hidden until the reveal.</div>`}
+    </div>`;
+  }
+
+  function bidding(st){
+    const a = ASSETS[S.i];
+    const n = S.bids.filter(b=>b!==null).length;
+    st.innerHTML = `
+      ${lotHead(a)}
+      <div class="actions"><button id="t30">Start 30-second discussion</button><span class="timer num" id="timer"></span></div>
+      <div class="bids">${GROUPS.map(bidBox).join("")}</div>
+      <div class="actions"><button class="primary" id="revealBtn" ${n===3?"":"disabled"}>Reveal all bids</button>
+      <span class="round">${n} of 3 bids locked</span></div>`;
+    $("#t30").onclick = ()=>startTimer(30);
+    GROUPS.forEach(g=>{
+      const inp = $("#in"+g.id), ed = $("#edit"+g.id);
+      if(inp){
+        const lock = ()=>{
+          const raw = inp.value.trim(), hint = $("#h"+g.id);
+          if(!/^\d+$/.test(raw)){ hint.textContent="Type a whole number, like 25."; hint.classList.add("err"); return; }
+          const v = parseInt(raw,10);
+          if(v > S.cash[g.id]){ hint.textContent=`Too high: ${g.name} only has ${eur(S.cash[g.id])}.`; hint.classList.add("err"); return; }
+          S.bids[g.id] = v; S.via[g.id] = "typed"; refreshBidding();
+        };
+        $("#lock"+g.id).onclick = lock;
+        inp.onkeydown = e=>{ if(e.key==="Enter") lock(); };
+      }
+      if(ed) ed.onclick = ()=>{ S.bids[g.id]=null; S.via[g.id]=null; refreshBidding(); };
+    });
+    $("#revealBtn").onclick = ()=>{ S.result = settle(); S.phase="reveal"; render(); };
+  }
+  function refreshBidding(){
+    // keep typed-but-unlocked values and the running timer
+    const typed = GROUPS.map(g => { const el = $("#in"+g.id); return el ? el.value : ""; });
+    const focused = document.activeElement && document.activeElement.id;
+    save(); bidding($("#stage")); paintTimer();
+    GROUPS.forEach((g,k) => { const el = $("#in"+g.id); if(el && typed[k]) el.value = typed[k]; });
+    if(focused && $("#"+focused)) $("#"+focused).focus();
+    broadcast();
+  }
+
+  function settle(){
+    const max = Math.max(...S.bids);
+    const top = S.bids.map((b,i)=>b===max?i:-1).filter(i=>i>=0);
+    if(max===0) return {winner:null, reason:"nobid", price:0};
+    if(top.length>1) return {winner:null, reason:"tie", price:max};
+    return {winner:top[0], price:max};
+  }
+
+  function reveal(st){
+    const a = ASSETS[S.i], r = S.result;
+    const order = GROUPS.map(g=>({g, b:S.bids[g.id]})).sort((x,y)=>x.b-y.b);
+    st.innerHTML = `
+      ${lotHead(a)}
+      <div class="cards">${order.map((o,k)=>`
+        <div class="card" id="c${k}" style="--c:${o.g.color}">
+          <div class="face back">?</div>
+          <div class="face front"><span class="who">${o.g.name}</span><span class="amt">${eur(o.b)}</span><span class="tag" id="tag${k}"></span></div>
+        </div>`).join("")}</div>
+      <div class="verdict" id="verdict"></div>
+      <div class="actions" id="after" hidden></div>`;
+    const step = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 750;
+    order.forEach((o,k)=>setTimeout(()=>{ const c=$("#c"+k); if(c) c.classList.add("flipped"); }, 300 + k*step));
+    setTimeout(()=>{
+      const v = $("#verdict"), after = $("#after"); if(!v) return;
+      if(r.winner!==null){
+        const k = order.findIndex(o=>o.g.id===r.winner);
+        $("#c"+k).classList.add("win"); $("#tag"+k).textContent="Winner";
+        v.innerHTML = `<span style="color:${GROUPS[r.winner].color}">${GROUPS[r.winner].name}</span> wins for ${eur(r.price)}. Why that much?`;
+        after.innerHTML = `<button id="t15">Start 15-second explanation</button><span class="timer num" id="timer"></span><button class="primary" id="val">Reveal the real value</button>`;
+        $("#t15").onclick = ()=>startTimer(15);
+      } else {
+        v.textContent = r.reason==="tie" ? `Tie at ${eur(r.price)}! Nobody gets this asset.` : "No bids. Nobody gets this asset.";
+        after.innerHTML = `<button class="primary" id="val">Reveal what it was worth</button>`;
+      }
+      v.classList.add("pop"); after.hidden = false;
+      $("#val").onclick = ()=>{
+        if(r.winner!==null){ S.cash[r.winner] -= r.price; S.owned[r.winner].push(S.i); }
+        S.phase="value"; render();
+      };
+    }, 300 + order.length*step + 250);
+  }
+
+  function value(st){
+    const a = ASSETS[S.i], r = S.result;
+    let stats = `<div class="stat big pop"><span class="k">Real value</span><span class="v">${eur(a.value)}</span></div>`;
+    if(r.winner!==null){
+      const p = a.value - r.price, g = GROUPS[r.winner];
+      stats += `<div class="stat"><span class="k">${g.name} paid</span><span class="v">${eur(r.price)}</span></div>
+        <div class="stat"><span class="k">${p>=0?"Profit":"Loss"}</span><span class="v ${p>=0?"good":"bad"}">${p>=0?"+":"−"}${eur(Math.abs(p))}</span></div>`;
+    } else {
+      stats += `<div class="stat"><span class="k">Bought by</span><span class="v" style="font-size:1.6rem">Nobody</span></div>`;
+    }
+    const last = S.i === ASSETS.length-1;
+    st.innerHTML = `
+      ${lotHead(a)}
+      <div class="value">${stats}</div>
+      <div class="why">${esc(a.why)}<span class="src">${esc(a.src)}</span></div>
+      <div class="actions"><button class="primary" id="next">${last?"Show final scores":"Next asset"}</button></div>`;
+    $("#next").onclick = ()=>{
+      if(last){ S.phase="final"; } else { S.i++; S.phase="bidding"; S.bids=[null,null,null]; S.via=[null,null,null]; S.result=null; }
+      render();
+    };
+  }
+
+  function final(st){
+    const rows = ranking(), w = rows[0];
+    st.innerHTML = `
+      <div class="eyebrow">Final scores</div>
+      <h1><span style="color:${w.g.color}">${w.g.name}</span> builds the strongest AI start-up</h1>
+      <div class="rank">${rows.map((x,k)=>`
+        <div class="rk ${k===0?"first":""}" style="--c:${x.g.color}">
+          <span class="pos">#${k+1}</span>
+          <div><div class="name">${x.g.name}</div>
+            <div class="detail">${eur(x.cash)} money left + ${eur(x.av)} assets${S.owned[x.g.id].length? " ("+S.owned[x.g.id].map(k=>SHORT[k]).join(", ")+")":""}</div></div>
+          <span class="tot">${eur(x.tot)}</span>
+        </div>`).join("")}</div>
+      <div class="why">Which asset did you misjudge, and which week 5 reading would have warned you?</div>`;
+  }
+
+  function bindReset(){
+    $("#resetBox").innerHTML = `<button class="ghost" id="resetBtn">Reset game</button>`;
+    $("#resetBtn").onclick = ()=>{
+      $("#resetBox").innerHTML = `<span class="confirm">Start over and erase all scores? <button id="yes">Yes, reset</button><button class="ghost" id="no">Cancel</button></span>`;
+      $("#yes").onclick = ()=>{ S = fresh(); bindReset(); render(); };
+      $("#no").onclick = bindReset;
+    };
+  }
+
+  bindReset(); render(); openPeer();
+}
+
+/* =========================================================
+   PLAYER (phone)
+   ========================================================= */
+function startPlayer(code){
+  document.getElementById("playerView").hidden = false;
+  const GKEY = "ai-auction-group-" + code;
+  let group = store.get(GKEY);
+  if(group!==0 && group!==1 && group!==2) group = null;
+  let peer = null, conn = null, online = false, st = null, ackMsg = "", sending = false, editing = false;
+  let tEnd = 0, tId = null;
+
+  function connect(){
+    if(typeof Peer === "undefined"){ paint(); return; }
+    if(!peer || peer.destroyed){
+      peer = window.PEER_OPTS ? new Peer(window.PEER_OPTS) : new Peer();
+      peer.on("open", dial);
+      peer.on("disconnected", () => { setTimeout(() => { try{ peer.reconnect(); }catch(e){} }, 1500); });
+      peer.on("error", err => { online = false; paint(); if(err.type==="peer-unavailable") setTimeout(dial, 2500); });
+    } else dial();
+  }
+  function dial(){
+    if(!peer || peer.disconnected) return;
+    if(conn && conn.open) return;
+    conn = peer.connect(PEER_PREFIX + code, {reliable:true});
+    conn.on("open", () => { online = true; hello(); paint(); });
+    conn.on("data", msg => {
+      if(!msg || typeof msg!=="object") return;
+      if(msg.t==="state"){
+        const prev = st; st = msg;
+        if(!prev || prev.i!==st.i || prev.phase!==st.phase){ ackMsg=""; editing=false; }
+        if(st.mine===null) sending=false;
+        tEnd = st.timer ? Date.now()+st.timer : 0; runTimer();
+        paint();
+      }
+      if(msg.t==="ack"){ sending=false; ackMsg = msg.ok ? "" : msg.msg; if(msg.ok) editing=false; paint(); }
+    });
+    conn.on("close", () => { online = false; paint(); setTimeout(dial, 1500); });
+    conn.on("error", () => { online = false; paint(); });
+  }
+  function hello(){ if(conn && conn.open) conn.send({t:"hello", group}); }
+  function runTimer(){
+    if(tId){ clearInterval(tId); tId=null; }
+    if(!tEnd) return;
+    tId = setInterval(() => { const el=$("#ptimer"); const t=Math.ceil((tEnd-Date.now())/1000); if(el){ el.textContent = t>0? t+"s left" : "Time!"; } if(t<=0){ clearInterval(tId); tId=null; } }, 250);
+  }
+  document.addEventListener("visibilitychange", () => { if(!document.hidden && !(conn && conn.open)) connect(); });
+
+  function paint(){
+    const v = $("#playerView");
+    const G = group!==null ? GROUPS[group] : null;
+    const status = online ? `<span class="pill"><span class="dot on"></span>Connected</span>`
+      : `<span class="pill"><span class="dot off"></span>${typeof Peer==="undefined" ? "Can't load" : "Connecting…"}</span>`;
+    let body = "";
+    if(group===null){
+      body = `<div class="pcard"><h2>Which group are you in?</h2>
+        <div class="pick">${GROUPS.map(g=>`<button data-g="${g.id}" style="--c:${g.color};color:${g.color}">${g.name}</button>`).join("")}</div></div>`;
+    } else if(!st){
+      body = `<div class="pcard" style="--c:${G.color}"><h2>Joining the auction…</h2><p class="small">Keep this page open. If it takes long, check you're on the same Wi-Fi or switch to mobile data.</p></div>`;
+    } else if(st.phase==="intro"){
+      body = `<div class="pcard" style="--c:${G.color}"><div class="eyebrow">You're in</div><h1 style="color:${G.color}">${G.name}</h1>
+        <p class="lede">You have €100M. Wait for the auction to start. Bids appear here.</p></div>`;
+    } else if(st.phase==="bidding"){
+      const mine = st.mine;
+      const head = `<div class="eyebrow">Lot ${st.i+1} of ${st.total}</div><h2>${esc(st.asset.name)}</h2><p class="small">${esc(st.asset.desc)}</p>`;
+      if(mine!==null && !editing){
+        body = `<div class="pcard" style="--c:${G.color}">${head}
+          <div class="small">Your group's secret bid</div><div class="pbig">${eur(mine)} ✓</div>
+          <p class="small">Wait for the reveal on the big screen. <span id="ptimer"></span></p>
+          <button id="change">Change bid</button></div>`;
+      } else {
+        body = `<div class="pcard" style="--c:${G.color}">${head}
+          <div class="small">${G.name} has <b class="num">${eur(st.cash[group])}</b> · <span id="ptimer"></span></div>
+          <label for="amt" class="small">Your secret bid (in millions)</label>
+          <div class="pin"><span>€</span><input id="amt" type="number" inputmode="numeric" min="0" max="${st.cash[group]}" step="1" placeholder="0"><span>M</span></div>
+          <button class="primary" id="send" ${sending||!online?"disabled":""}>${sending?"Sending…":"Submit bid"}</button>
+          <div class="small" style="color:var(--bad)">${esc(ackMsg)}</div></div>`;
+      }
+    } else if(st.phase==="reveal" || st.phase==="value"){
+      const r = st.result || {};
+      const list = GROUPS.map(g=>({g,b:st.bids[g.id]})).sort((a,b)=>a.b-b.b);
+      let verdict = r.winner===null || r.winner===undefined
+        ? (r.reason==="tie" ? `Tie at ${eur(r.price)}. Nobody gets it.` : "No bids. Nobody gets it.")
+        : `${GROUPS[r.winner].name} wins for ${eur(r.price)}`;
+      let val = "";
+      if(st.phase==="value"){
+        val = `<div class="small">Real value</div><div class="pbig" style="color:var(--brass)">${eur(st.value)}</div>`;
+        if(r.winner!==null && r.winner!==undefined){ const p = st.value - r.price; val += `<div class="${p>=0?"good":"bad"}" style="font-weight:700">${GROUPS[r.winner].name}: ${p>=0?"+":"−"}${eur(Math.abs(p))} ${p>=0?"profit":"loss"}</div>`; }
+        val += `<p class="small">${esc(st.why)}</p>`;
+      } else val = `<p class="small">Watch the big screen for the real value.</p>`;
+      body = `<div class="pcard" style="--c:${G.color}"><div class="eyebrow">Lot ${st.i+1}: ${esc(st.asset.name)}</div>
+        <h2>${verdict}</h2>
+        <div class="plist">${list.map(x=>`<div style="--c:${x.g.color}"><span>${x.g.name}</span><b class="num">${eur(x.b)}</b></div>`).join("")}</div>${val}
+        <div class="small">${G.name} now has <b class="num">${eur(st.cash[group])}</b> to spend.</div></div>`;
+    } else if(st.phase==="final"){
+      const me = st.rank.findIndex(x=>x.g===group);
+      body = `<div class="pcard" style="--c:${G.color}"><div class="eyebrow">Final scores</div>
+        <h1>${me===0 ? "You won! 🏆" : "#"+(me+1)+" place"}</h1>
+        <div class="plist">${st.rank.map((x,k)=>`<div style="--c:${GROUPS[x.g].color}"><span>#${k+1} ${GROUPS[x.g].name}</span><b class="num">${eur(x.tot)}</b></div>`).join("")}</div></div>`;
+    }
+    const prevAmt = $("#amt") ? $("#amt").value : "", hadFocus = document.activeElement && document.activeElement.id === "amt";
+    v.innerHTML = `<div class="phead"><div class="brand" style="font-size:1.1rem">AI Asset Auction</div>${status}</div>${body}
+      ${group!==null ? `<div style="text-align:center"><button class="linkbtn" id="switch">Wrong group? Switch</button></div>` : ""}`;
+
+    if($("#amt")){ if(prevAmt) $("#amt").value = prevAmt; if(hadFocus) $("#amt").focus(); }
+    v.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { group = Number(b.dataset.g); store.set(GKEY, group); hello(); paint(); });
+    const sw = $("#switch"); if(sw) sw.onclick = () => { group = null; store.set(GKEY, null); hello(); paint(); };
+    const ch = $("#change"); if(ch) ch.onclick = () => { editing = true; paint(); };
+    const send = $("#send"), amt = $("#amt");
+    if(send){
+      const go = () => {
+        const raw = (amt.value||"").trim();
+        if(!/^\d+$/.test(raw)){ ackMsg = "Type a whole number, like 25."; paint(); return; }
+        const n = parseInt(raw,10);
+        if(n > st.cash[group]){ ackMsg = `Too high: you only have ${eur(st.cash[group])}.`; paint(); return; }
+        if(!(conn && conn.open)){ ackMsg = "Not connected yet. Try again in a second."; paint(); return; }
+        sending = true; ackMsg = ""; conn.send({t:"bid", round:st.i, amount:n}); paint();
+      };
+      send.onclick = go; amt.onkeydown = e => { if(e.key==="Enter") go(); };
+    }
+  }
+
+  paint(); connect();
+}
+
+</script>
+</body>
+</html>
